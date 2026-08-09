@@ -4,7 +4,7 @@ import "os"
 
 const (
 	defaultServerAddress = ":8080"
-	defaultDatabaseURL   = "postgres://arxveil:arxveil-local-dev@localhost:5432/arxveil?"
+	defaultDatabaseURL   = "postgres://arxveil:arxveil-local-dev@localhost:5432/arxveil?sslmode=disable"
 )
 
 type Config struct {
