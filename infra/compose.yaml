@@ -35,7 +35,8 @@ services:
 
   server:
     build:
-      context: ../server
+      context: ..
+      dockerfile: server/Dockerfile
     environment:
       ARXVEIL_SERVER_ADDRESS: :8080
       ARXVEIL_DATABASE_URL: postgres://${ARXVEIL_POSTGRES_USER:-arxveil}:${ARXVEIL_POSTGRES_PASSWORD:-arxveil-local-dev}@postgres:5432/${ARXVEIL_POSTGRES_DB:-arxveil}?sslmode=disable
