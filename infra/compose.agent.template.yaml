@@ -1,0 +1,16 @@
+# Shared definition for each named local integration agent.
+# This file is referenced by compose.agents.yaml through Compose `extends` and
+# is not started as a standalone service.
+services:
+  agent:
+    build:
+      context: ..
+      dockerfile: agent/Dockerfile
+    restart: unless-stopped
+    environment:
+      ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
+    depends_on:
+      dev-token-issuer:
+        condition: service_completed_successfully
+      server:
+        condition: service_healthy
