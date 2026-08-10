@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package arxveil.agent.v1;
+
+option go_package = "github.com/idle-zero/arxveil/server/internal/gen/agentv1;agentv1";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service AgentService {
+  // Used only on the agent's first start, with a one-time enrollment token.
+  rpc Enroll(EnrollRequest) returns (EnrollResponse);
+
+  // A persistent authenticated stream for heartbeats and telemetry.
+  rpc Connect(stream AgentMessage) returns (google.protobuf.Empty);
+}
+
+message EnrollRequest {
+  // A short-lived, single-use token supplied during installation.
+  string enrollment_token = 1;
+
+  string hostname = 2;
+  string operating_system = 3;
+  string os_version = 4;
+  string architecture = 5;
+  string agent_version = 6;
+
+  repeated string capabilities = 7;
+}
+
+message EnrollResponse {
+  string machine_id = 1;
+  string agent_id = 2;
+
+  // A randomly generated permanent credential.
+  // The agent stores it locally and never exposes it to an operator.
+  string agent_secret = 3;
+}
+
+message AgentMessage {
+  oneof payload {
+    Authenticate authenticate = 1;
+    Heartbeat heartbeat = 2;
+    Telemetry telemetry = 3;
+  }
+}
+
+// Must be the first message in every Connect stream.
+message Authenticate {
+  string agent_id = 1;
+  string agent_secret = 2;
+}
+
+message Heartbeat {
+  google.protobuf.Timestamp sent_at = 1;
+}
+
+message Telemetry {
+  google.protobuf.Timestamp collected_at = 1;
+
+  double cpu_usage_percent = 2;
+
+  int64 memory_total_bytes = 3;
+  int64 memory_used_bytes = 4;
+
+  int64 disk_total_bytes = 5;
+  int64 disk_used_bytes = 6;
+
+  int64 uptime_seconds = 7;
+}
