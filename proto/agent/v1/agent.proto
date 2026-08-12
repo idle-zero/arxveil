@@ -12,7 +12,7 @@ service AgentService {
   rpc Enroll(EnrollRequest) returns (EnrollResponse);
 
   // A persistent authenticated stream for heartbeats and telemetry.
-  rpc Connect(stream AgentMessage) returns (google.protobuf.Empty);
+  rpc StreamUpdates(stream AgentMessage) returns (google.protobuf.Empty);
 }
 
 message EnrollRequest {

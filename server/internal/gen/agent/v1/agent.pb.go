@@ -501,10 +501,10 @@ const file_agent_v1_agent_proto_rawDesc = "" +
 	"\x11memory_used_bytes\x18\x04 \x01(\x03R\x0fmemoryUsedBytes\x12(\n" +
 	"\x10disk_total_bytes\x18\x05 \x01(\x03R\x0ediskTotalBytes\x12&\n" +
 	"\x0fdisk_used_bytes\x18\x06 \x01(\x03R\rdiskUsedBytes\x12%\n" +
-	"\x0euptime_seconds\x18\a \x01(\x03R\ruptimeSeconds2\xa0\x01\n" +
+	"\x0euptime_seconds\x18\a \x01(\x03R\ruptimeSeconds2\xa6\x01\n" +
 	"\fAgentService\x12K\n" +
-	"\x06Enroll\x12\x1f.arxveil.agent.v1.EnrollRequest\x1a .arxveil.agent.v1.EnrollResponse\x12C\n" +
-	"\aConnect\x12\x1e.arxveil.agent.v1.AgentMessage\x1a\x16.google.protobuf.Empty(\x01BCZAgithub.com/idle-zero/arxveil/server/internal/gen/agent/v1;agentv1b\x06proto3"
+	"\x06Enroll\x12\x1f.arxveil.agent.v1.EnrollRequest\x1a .arxveil.agent.v1.EnrollResponse\x12I\n" +
+	"\rStreamUpdates\x12\x1e.arxveil.agent.v1.AgentMessage\x1a\x16.google.protobuf.Empty(\x01BCZAgithub.com/idle-zero/arxveil/server/internal/gen/agent/v1;agentv1b\x06proto3"
 
 var (
 	file_agent_v1_agent_proto_rawDescOnce sync.Once
@@ -536,9 +536,9 @@ var file_agent_v1_agent_proto_depIdxs = []int32{
 	6, // 3: arxveil.agent.v1.Heartbeat.sent_at:type_name -> google.protobuf.Timestamp
 	6, // 4: arxveil.agent.v1.Telemetry.collected_at:type_name -> google.protobuf.Timestamp
 	0, // 5: arxveil.agent.v1.AgentService.Enroll:input_type -> arxveil.agent.v1.EnrollRequest
-	2, // 6: arxveil.agent.v1.AgentService.Connect:input_type -> arxveil.agent.v1.AgentMessage
+	2, // 6: arxveil.agent.v1.AgentService.StreamUpdates:input_type -> arxveil.agent.v1.AgentMessage
 	1, // 7: arxveil.agent.v1.AgentService.Enroll:output_type -> arxveil.agent.v1.EnrollResponse
-	7, // 8: arxveil.agent.v1.AgentService.Connect:output_type -> google.protobuf.Empty
+	7, // 8: arxveil.agent.v1.AgentService.StreamUpdates:output_type -> google.protobuf.Empty
 	7, // [7:9] is the sub-list for method output_type
 	5, // [5:7] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name

@@ -20,8 +20,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AgentService_Enroll_FullMethodName  = "/arxveil.agent.v1.AgentService/Enroll"
-	AgentService_Connect_FullMethodName = "/arxveil.agent.v1.AgentService/Connect"
+	AgentService_Enroll_FullMethodName        = "/arxveil.agent.v1.AgentService/Enroll"
+	AgentService_StreamUpdates_FullMethodName = "/arxveil.agent.v1.AgentService/StreamUpdates"
 )
 
 // AgentServiceClient is the client API for AgentService service.
@@ -31,7 +31,7 @@ type AgentServiceClient interface {
 	// Used only on the agent's first start, with a one-time enrollment token.
 	Enroll(ctx context.Context, in *EnrollRequest, opts ...grpc.CallOption) (*EnrollResponse, error)
 	// A persistent authenticated stream for heartbeats and telemetry.
-	Connect(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[AgentMessage, emptypb.Empty], error)
+	StreamUpdates(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[AgentMessage, emptypb.Empty], error)
 }
 
 type agentServiceClient struct {
@@ -52,9 +52,9 @@ func (c *agentServiceClient) Enroll(ctx context.Context, in *EnrollRequest, opts
 	return out, nil
 }
 
-func (c *agentServiceClient) Connect(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[AgentMessage, emptypb.Empty], error) {
+func (c *agentServiceClient) StreamUpdates(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[AgentMessage, emptypb.Empty], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AgentService_ServiceDesc.Streams[0], AgentService_Connect_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &AgentService_ServiceDesc.Streams[0], AgentService_StreamUpdates_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *agentServiceClient) Connect(ctx context.Context, opts ...grpc.CallOptio
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AgentService_ConnectClient = grpc.ClientStreamingClient[AgentMessage, emptypb.Empty]
+type AgentService_StreamUpdatesClient = grpc.ClientStreamingClient[AgentMessage, emptypb.Empty]
 
 // AgentServiceServer is the server API for AgentService service.
 // All implementations must embed UnimplementedAgentServiceServer
@@ -72,7 +72,7 @@ type AgentServiceServer interface {
 	// Used only on the agent's first start, with a one-time enrollment token.
 	Enroll(context.Context, *EnrollRequest) (*EnrollResponse, error)
 	// A persistent authenticated stream for heartbeats and telemetry.
-	Connect(grpc.ClientStreamingServer[AgentMessage, emptypb.Empty]) error
+	StreamUpdates(grpc.ClientStreamingServer[AgentMessage, emptypb.Empty]) error
 	mustEmbedUnimplementedAgentServiceServer()
 }
 
@@ -86,8 +86,8 @@ type UnimplementedAgentServiceServer struct{}
 func (UnimplementedAgentServiceServer) Enroll(context.Context, *EnrollRequest) (*EnrollResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Enroll not implemented")
 }
-func (UnimplementedAgentServiceServer) Connect(grpc.ClientStreamingServer[AgentMessage, emptypb.Empty]) error {
-	return status.Errorf(codes.Unimplemented, "method Connect not implemented")
+func (UnimplementedAgentServiceServer) StreamUpdates(grpc.ClientStreamingServer[AgentMessage, emptypb.Empty]) error {
+	return status.Errorf(codes.Unimplemented, "method StreamUpdates not implemented")
 }
 func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
 func (UnimplementedAgentServiceServer) testEmbeddedByValue()                      {}
@@ -128,12 +128,12 @@ func _AgentService_Enroll_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AgentService_Connect_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(AgentServiceServer).Connect(&grpc.GenericServerStream[AgentMessage, emptypb.Empty]{ServerStream: stream})
+func _AgentService_StreamUpdates_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(AgentServiceServer).StreamUpdates(&grpc.GenericServerStream[AgentMessage, emptypb.Empty]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AgentService_ConnectServer = grpc.ClientStreamingServer[AgentMessage, emptypb.Empty]
+type AgentService_StreamUpdatesServer = grpc.ClientStreamingServer[AgentMessage, emptypb.Empty]
 
 // AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -149,8 +149,8 @@ var AgentService_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "Connect",
-			Handler:       _AgentService_Connect_Handler,
+			StreamName:    "StreamUpdates",
+			Handler:       _AgentService_StreamUpdates_Handler,
 			ClientStreams: true,
 		},
 	},
