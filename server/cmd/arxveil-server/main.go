@@ -2,75 +2,51 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/idle-zero/arxveil/server/internal/config"
-	"github.com/idle-zero/arxveil/server/internal/httpapi"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	if err := run(logger); err != nil {
+	if err := run(ctx, config.Load(), logger); err != nil {
 		logger.Error("server stopped with an error", "error", err)
 		os.Exit(1)
 	}
 }
 
-func run(logger *slog.Logger) error {
-	cfg := config.Load()
-	poolConfig, err := pgxpool.ParseConfig(cfg.DatabaseURL)
+func run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
+	pool, err := openDatabasePool(ctx, cfg.DatabaseURL)
 	if err != nil {
-		return fmt.Errorf("parse database configruation : %w", err)
-	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
-	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
-	if err != nil {
-		return fmt.Errorf("create database pool:%w", err)
+		return err
 	}
 	defer pool.Close()
 
-	server := &http.Server{
-		Addr:              cfg.ServerAddress,
-		Handler:           httpapi.NewRouter(pool),
-		ReadHeaderTimeout: 5 * time.Second,
+	application, err := newApplication(cfg, pool, logger)
+	if err != nil {
+		return err
 	}
 
-	serverErrors := make(chan error, 1)
+	return application.serve(ctx)
+}
 
-	go func() {
-		logger.Info("server started", "address", cfg.ServerAddress)
-
-		err := server.ListenAndServe()
-
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			serverErrors <- err
-		}
-	}()
-
-	select {
-	case <-ctx.Done():
-		logger.Info("shutdown signal received")
-	case err := <-serverErrors:
-		return fmt.Errorf("serve HTTP: %w", err)
+func openDatabasePool(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
+	poolConfig, err := pgxpool.ParseConfig(databaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("parse database configuration: %w", err)
 	}
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	if err := server.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("shut down HTTP server: %w", err)
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
+	if err != nil {
+		return nil, fmt.Errorf("create database pool: %w", err)
 	}
-	return nil
+	return pool, nil
 }

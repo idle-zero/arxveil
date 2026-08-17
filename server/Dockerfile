@@ -19,6 +19,6 @@ COPY --from=build /out/arxveil-server ./arxveil-server
 
 USER arxveil
 
-EXPOSE 8080
+EXPOSE 8080 9090
 
 ENTRYPOINT ["/app/arxveil-server"]

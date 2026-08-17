@@ -1,6 +1,6 @@
 CREATE TABLE machines (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL CHECK (length(trim(name)) BETWEEN 1 AND 128),
+    name TEXT NOT NULL CHECK (length(trim(name)) BETWEEN 1 AND 255),
     hostname TEXT NOT NULL CHECK (length(trim(hostname)) BETWEEN 1 AND 255),
     operating_system TEXT NOT NULL CHECK (length(trim(operating_system)) > 0),
     os_version TEXT NOT NULL CHECK (length(trim(os_version)) > 0),
