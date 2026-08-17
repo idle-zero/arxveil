@@ -1,0 +1,11 @@
+services:
+  agent:
+    build:
+      context: ..
+      dockerfile: agent/Dockerfile
+    restart: unless-stopped
+    environment:
+      ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
+    depends_on:
+      server:
+        condition: service_healthy

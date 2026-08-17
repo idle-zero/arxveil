@@ -1,0 +1,86 @@
+services:
+  agent-01:
+    extends:
+      file: compose.agent.template.yaml
+      service: agent
+    hostname: agent-01
+    environment:
+      ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
+      ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
+    volumes:
+      - agent_01_state:/var/lib/arxveil
+
+  agent-02:
+    extends:
+      file: compose.agent.template.yaml
+      service: agent
+    hostname: agent-02
+    environment:
+      ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
+      ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
+    volumes:
+      - agent_02_state:/var/lib/arxveil
+
+  agent-03:
+    extends:
+      file: compose.agent.template.yaml
+      service: agent
+    hostname: agent-03
+    environment:
+      ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
+      ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
+    volumes:
+      - agent_03_state:/var/lib/arxveil
+
+  agent-04:
+    extends:
+      file: compose.agent.template.yaml
+      service: agent
+    hostname: agent-04
+    environment:
+      ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
+      ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
+    volumes:
+      - agent_04_state:/var/lib/arxveil
+
+  agent-05:
+    extends:
+      file: compose.agent.template.yaml
+      service: agent
+    hostname: agent-05
+    environment:
+      ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
+      ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
+    volumes:
+      - agent_05_state:/var/lib/arxveil
+
+  agent-06:
+    extends:
+      file: compose.agent.template.yaml
+      service: agent
+    hostname: agent-06
+    environment:
+      ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
+      ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
+    volumes:
+      - agent_06_state:/var/lib/arxveil
+
+  agent-07:
+    extends:
+      file: compose.agent.template.yaml
+      service: agent
+    hostname: agent-07
+    environment:
+      ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
+      ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
+    volumes:
+      - agent_07_state:/var/lib/arxveil
+
+volumes:
+  agent_01_state:
+  agent_02_state:
+  agent_03_state:
+  agent_04_state:
+  agent_05_state:
+  agent_06_state:
+  agent_07_state:
