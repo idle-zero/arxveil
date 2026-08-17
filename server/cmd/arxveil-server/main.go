@@ -29,7 +29,7 @@ func run(logger *slog.Logger) error {
 	cfg := config.Load()
 	poolConfig, err := pgxpool.ParseConfig(cfg.DatabaseURL)
 	if err != nil {
-		return fmt.Errorf("parse database configruation : %w", err)
+		return fmt.Errorf("parse database configuration: %w", err)
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
