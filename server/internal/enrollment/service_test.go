@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -54,6 +55,17 @@ func TestEnrollHashesCredentialAndNormalizesMetadata(t *testing.T) {
 func TestEnrollRejectsInvalidInput(t *testing.T) {
 	service := New(&fakeStore{})
 	_, err := service.Enroll(context.Background(), Input{})
+	if !errors.Is(err, ErrInvalidInput) {
+		t.Fatalf("Enroll() error = %v, want ErrInvalidInput", err)
+	}
+}
+
+func TestEnrollRejectsHostnameLongerThanMachineNameLimit(t *testing.T) {
+	service := New(&fakeStore{})
+	input := validInput()
+	input.Hostname = strings.Repeat("a", 256)
+
+	_, err := service.Enroll(context.Background(), input)
 	if !errors.Is(err, ErrInvalidInput) {
 		t.Fatalf("Enroll() error = %v, want ErrInvalidInput", err)
 	}
