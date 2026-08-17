@@ -24,15 +24,13 @@ const (
 )
 
 type EnrollRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// A short-lived, single-use token supplied during installation.
-	EnrollmentToken string   `protobuf:"bytes,1,opt,name=enrollment_token,json=enrollmentToken,proto3" json:"enrollment_token,omitempty"`
-	Hostname        string   `protobuf:"bytes,2,opt,name=hostname,proto3" json:"hostname,omitempty"`
-	OperatingSystem string   `protobuf:"bytes,3,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
-	OsVersion       string   `protobuf:"bytes,4,opt,name=os_version,json=osVersion,proto3" json:"os_version,omitempty"`
-	Architecture    string   `protobuf:"bytes,5,opt,name=architecture,proto3" json:"architecture,omitempty"`
-	AgentVersion    string   `protobuf:"bytes,6,opt,name=agent_version,json=agentVersion,proto3" json:"agent_version,omitempty"`
-	Capabilities    []string `protobuf:"bytes,7,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Hostname        string                 `protobuf:"bytes,1,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	OperatingSystem string                 `protobuf:"bytes,2,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
+	OsVersion       string                 `protobuf:"bytes,3,opt,name=os_version,json=osVersion,proto3" json:"os_version,omitempty"`
+	Architecture    string                 `protobuf:"bytes,4,opt,name=architecture,proto3" json:"architecture,omitempty"`
+	AgentVersion    string                 `protobuf:"bytes,5,opt,name=agent_version,json=agentVersion,proto3" json:"agent_version,omitempty"`
+	Capabilities    []string               `protobuf:"bytes,6,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -65,13 +63,6 @@ func (x *EnrollRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use EnrollRequest.ProtoReflect.Descriptor instead.
 func (*EnrollRequest) Descriptor() ([]byte, []int) {
 	return file_agent_v1_agent_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *EnrollRequest) GetEnrollmentToken() string {
-	if x != nil {
-		return x.EnrollmentToken
-	}
-	return ""
 }
 
 func (x *EnrollRequest) GetHostname() string {
@@ -276,7 +267,7 @@ func (*AgentMessage_Heartbeat) isAgentMessage_Payload() {}
 
 func (*AgentMessage_Telemetry) isAgentMessage_Payload() {}
 
-// Must be the first message in every Connect stream.
+// Must be the first message in every StreamUpdates stream.
 type Authenticate struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
@@ -469,16 +460,15 @@ var File_agent_v1_agent_proto protoreflect.FileDescriptor
 
 const file_agent_v1_agent_proto_rawDesc = "" +
 	"\n" +
-	"\x14agent/v1/agent.proto\x12\x10arxveil.agent.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8d\x02\n" +
-	"\rEnrollRequest\x12)\n" +
-	"\x10enrollment_token\x18\x01 \x01(\tR\x0fenrollmentToken\x12\x1a\n" +
-	"\bhostname\x18\x02 \x01(\tR\bhostname\x12)\n" +
-	"\x10operating_system\x18\x03 \x01(\tR\x0foperatingSystem\x12\x1d\n" +
+	"\x14agent/v1/agent.proto\x12\x10arxveil.agent.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe2\x01\n" +
+	"\rEnrollRequest\x12\x1a\n" +
+	"\bhostname\x18\x01 \x01(\tR\bhostname\x12)\n" +
+	"\x10operating_system\x18\x02 \x01(\tR\x0foperatingSystem\x12\x1d\n" +
 	"\n" +
-	"os_version\x18\x04 \x01(\tR\tosVersion\x12\"\n" +
-	"\farchitecture\x18\x05 \x01(\tR\farchitecture\x12#\n" +
-	"\ragent_version\x18\x06 \x01(\tR\fagentVersion\x12\"\n" +
-	"\fcapabilities\x18\a \x03(\tR\fcapabilities\"m\n" +
+	"os_version\x18\x03 \x01(\tR\tosVersion\x12\"\n" +
+	"\farchitecture\x18\x04 \x01(\tR\farchitecture\x12#\n" +
+	"\ragent_version\x18\x05 \x01(\tR\fagentVersion\x12\"\n" +
+	"\fcapabilities\x18\x06 \x03(\tR\fcapabilities\"m\n" +
 	"\x0eEnrollResponse\x12\x1d\n" +
 	"\n" +
 	"machine_id\x18\x01 \x01(\tR\tmachineId\x12\x19\n" +

@@ -18,18 +18,6 @@ CREATE TABLE machines (
 CREATE INDEX machines_status_last_seen_idx
     ON machines (status, last_seen_at DESC);
 
-CREATE TABLE enrollment_tokens (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    token_hash BYTEA NOT NULL UNIQUE,
-    machine_name TEXT NOT NULL CHECK (length(trim(machine_name)) BETWEEN 1 AND 128),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    expires_at TIMESTAMPTZ NOT NULL,
-    consumed_at TIMESTAMPTZ,
-    machine_id UUID UNIQUE REFERENCES machines(id) ON DELETE SET NULL,
-    CHECK (expires_at > created_at),
-    CHECK (consumed_at IS NULL OR consumed_at >= created_at)
-);
-
 CREATE TABLE agent_identities (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     machine_id UUID NOT NULL REFERENCES machines(id) ON DELETE CASCADE,

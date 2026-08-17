@@ -26,10 +26,7 @@ pub async fn run() -> Result<(), AgentError> {
             );
         }
         None => {
-            tracing::info!(
-                token_file_configured = config.enrollment_token_file.is_some(),
-                "agent has no identity and will require enrollment"
-            );
+            tracing::info!("agent has no identity");
         }
     }
 

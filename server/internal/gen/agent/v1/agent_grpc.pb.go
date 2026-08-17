@@ -28,7 +28,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AgentServiceClient interface {
-	// Used only on the agent's first start, with a one-time enrollment token.
+	// Used only on the agent's first start.
 	Enroll(ctx context.Context, in *EnrollRequest, opts ...grpc.CallOption) (*EnrollResponse, error)
 	// A persistent authenticated stream for heartbeats and telemetry.
 	StreamUpdates(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[AgentMessage, emptypb.Empty], error)
@@ -69,7 +69,7 @@ type AgentService_StreamUpdatesClient = grpc.ClientStreamingClient[AgentMessage,
 // All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility.
 type AgentServiceServer interface {
-	// Used only on the agent's first start, with a one-time enrollment token.
+	// Used only on the agent's first start.
 	Enroll(context.Context, *EnrollRequest) (*EnrollResponse, error)
 	// A persistent authenticated stream for heartbeats and telemetry.
 	StreamUpdates(grpc.ClientStreamingServer[AgentMessage, emptypb.Empty]) error

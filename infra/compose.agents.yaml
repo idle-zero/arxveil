@@ -1,27 +1,4 @@
-# Local seven-agent integration fleet.
-#
-# Run it together with the base stack:
-#   docker compose -f infra/compose.yaml -f infra/compose.agents.yaml up --build
-#
-# The dev token issuer and Rust agent image are implemented in the following
-# steps. This file establishes their final local-development wiring.
-
 services:
-  dev-token-issuer:
-    build:
-      context: ..
-      dockerfile: server/Dockerfile
-    entrypoint: ["/usr/local/bin/arxveil-dev-token-issuer"]
-    environment:
-      ARXVEIL_TOKEN_ISSUER_SERVER_URL: http://server:8080
-      ARXVEIL_TOKEN_ISSUER_DIRECTORY: /bootstrap
-      ARXVEIL_TOKEN_ISSUER_AGENT_COUNT: "7"
-    volumes:
-      - agent_bootstrap_tokens:/bootstrap
-    depends_on:
-      server:
-        condition: service_healthy
-
   agent-01:
     extends:
       file: compose.agent.template.yaml
@@ -29,10 +6,8 @@ services:
     hostname: agent-01
     environment:
       ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
-      ARXVEIL_AGENT_ENROLLMENT_TOKEN_FILE: /bootstrap/agent-01.token
       ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
     volumes:
-      - agent_bootstrap_tokens:/bootstrap:ro
       - agent_01_state:/var/lib/arxveil
 
   agent-02:
@@ -42,10 +17,8 @@ services:
     hostname: agent-02
     environment:
       ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
-      ARXVEIL_AGENT_ENROLLMENT_TOKEN_FILE: /bootstrap/agent-02.token
       ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
     volumes:
-      - agent_bootstrap_tokens:/bootstrap:ro
       - agent_02_state:/var/lib/arxveil
 
   agent-03:
@@ -55,10 +28,8 @@ services:
     hostname: agent-03
     environment:
       ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
-      ARXVEIL_AGENT_ENROLLMENT_TOKEN_FILE: /bootstrap/agent-03.token
       ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
     volumes:
-      - agent_bootstrap_tokens:/bootstrap:ro
       - agent_03_state:/var/lib/arxveil
 
   agent-04:
@@ -68,10 +39,8 @@ services:
     hostname: agent-04
     environment:
       ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
-      ARXVEIL_AGENT_ENROLLMENT_TOKEN_FILE: /bootstrap/agent-04.token
       ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
     volumes:
-      - agent_bootstrap_tokens:/bootstrap:ro
       - agent_04_state:/var/lib/arxveil
 
   agent-05:
@@ -81,10 +50,8 @@ services:
     hostname: agent-05
     environment:
       ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
-      ARXVEIL_AGENT_ENROLLMENT_TOKEN_FILE: /bootstrap/agent-05.token
       ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
     volumes:
-      - agent_bootstrap_tokens:/bootstrap:ro
       - agent_05_state:/var/lib/arxveil
 
   agent-06:
@@ -94,10 +61,8 @@ services:
     hostname: agent-06
     environment:
       ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
-      ARXVEIL_AGENT_ENROLLMENT_TOKEN_FILE: /bootstrap/agent-06.token
       ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
     volumes:
-      - agent_bootstrap_tokens:/bootstrap:ro
       - agent_06_state:/var/lib/arxveil
 
   agent-07:
@@ -107,14 +72,11 @@ services:
     hostname: agent-07
     environment:
       ARXVEIL_AGENT_SERVER_ENDPOINT: http://server:9090
-      ARXVEIL_AGENT_ENROLLMENT_TOKEN_FILE: /bootstrap/agent-07.token
       ARXVEIL_AGENT_STATE_DIRECTORY: /var/lib/arxveil
     volumes:
-      - agent_bootstrap_tokens:/bootstrap:ro
       - agent_07_state:/var/lib/arxveil
 
 volumes:
-  agent_bootstrap_tokens:
   agent_01_state:
   agent_02_state:
   agent_03_state:
