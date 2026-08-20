@@ -1,5 +1,6 @@
 pub mod config;
 pub mod identity;
+pub mod metadata;
 pub mod proto;
 
 use thiserror::Error;
@@ -11,12 +12,14 @@ pub enum AgentError {
 
     #[error(transparent)]
     Identity(#[from] identity::IdentityError),
+
+    #[error(transparent)]
+    Metadata(#[from] metadata::MachineMetadataError),
 }
 
 pub async fn run() -> Result<(), AgentError> {
     let config = config::AgentConfig::from_environment()?;
     let store = identity::IdentityStore::new(config.state_directory.clone());
-
     match store.load()? {
         Some(identity) => {
             tracing::info!(
