@@ -11,7 +11,7 @@ pub enum EnrollmentError {
     #[error("connect to enrollment server: {0}")]
     Transport(#[from] tonic::transport::Error),
 
-    #[error("enrollment request failed: {0}")]
+    #[error("enrollment RPC failed: {0}")]
     Status(#[from] tonic::Status),
 
     #[error("server returned an invalid machine ID: {0}")]
@@ -20,7 +20,7 @@ pub enum EnrollmentError {
     #[error("server returned an invalid agent ID: {0}")]
     InvalidAgentID(#[source] uuid::Error),
 
-    #[error("empty secret in enrollment response")]
+    #[error("server returned an empty agent secret")]
     EmptySecret,
 }
 
