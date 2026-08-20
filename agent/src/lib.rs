@@ -1,4 +1,5 @@
 pub mod config;
+pub mod enrollment;
 pub mod identity;
 pub mod metadata;
 pub mod proto;
@@ -15,6 +16,9 @@ pub enum AgentError {
 
     #[error(transparent)]
     Metadata(#[from] metadata::MachineMetadataError),
+
+    #[error(transparent)]
+    Enrollment(#[from] enrollment::EnrollmentError),
 }
 
 pub async fn run() -> Result<(), AgentError> {
@@ -30,6 +34,15 @@ pub async fn run() -> Result<(), AgentError> {
         }
         None => {
             tracing::info!("agent has no identity");
+            let machine_metadata = metadata::collect()?;
+
+            let enrolled_agent = enrollment::enroll(&config, &machine_metadata).await?;
+            store.save_new(&identity::AgentIdentity {
+                schema_version: 1,
+                machine_id: enrolled_agent.machine_id(),
+                agent_id: enrolled_agent.agent_id(),
+                agent_secret: enrolled_agent.agent_secret().to_string(),
+            })?;
         }
     }
 
