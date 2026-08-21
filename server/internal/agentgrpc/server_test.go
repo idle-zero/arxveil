@@ -7,6 +7,7 @@ import (
 
 	"github.com/idle-zero/arxveil/server/internal/enrollment"
 	agentv1 "github.com/idle-zero/arxveil/server/internal/gen/agent/v1"
+	"github.com/idle-zero/arxveil/server/internal/presence"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -22,13 +23,27 @@ func (e *fakeEnroller) Enroll(_ context.Context, input enrollment.Input) (enroll
 	return e.result, e.err
 }
 
+type fakePresenceTracker struct{}
+
+func (fakePresenceTracker) OpenSession(_ context.Context, _ presence.Credentials) (presence.Session, error) {
+	return presence.Session{}, nil
+}
+
+func (fakePresenceTracker) RecordHeartbeat(_ context.Context, _ presence.Session) error {
+	return nil
+}
+
+func (fakePresenceTracker) CloseSession(_ context.Context, _ presence.Session) error {
+	return nil
+}
+
 func TestEnrollMapsRequestAndResponse(t *testing.T) {
 	enroller := &fakeEnroller{result: enrollment.EnrolledAgent{
 		MachineID: "machine-id",
 		AgentID:   "agent-id",
 		Secret:    "agent-secret",
 	}}
-	server := NewServer(enroller)
+	server := NewServer(enroller, fakePresenceTracker{})
 
 	response, err := server.Enroll(context.Background(), &agentv1.EnrollRequest{
 		Hostname:        "agent-01",
@@ -61,7 +76,7 @@ func TestEnrollMapsKnownErrorsToGRPCStatus(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			server := NewServer(&fakeEnroller{err: test.err})
+			server := NewServer(&fakeEnroller{err: test.err}, fakePresenceTracker{})
 			_, err := server.Enroll(context.Background(), &agentv1.EnrollRequest{})
 			if got := status.Code(err); got != test.wantCode {
 				t.Errorf("status code = %s, want %s", got, test.wantCode)

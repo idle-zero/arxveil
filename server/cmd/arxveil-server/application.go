@@ -14,6 +14,7 @@ import (
 	"github.com/idle-zero/arxveil/server/internal/enrollment"
 	agentv1 "github.com/idle-zero/arxveil/server/internal/gen/agent/v1"
 	"github.com/idle-zero/arxveil/server/internal/httpapi"
+	"github.com/idle-zero/arxveil/server/internal/presence"
 	"github.com/idle-zero/arxveil/server/internal/repository/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
@@ -34,13 +35,16 @@ func newApplication(cfg config.Config, database *pgxpool.Pool, logger *slog.Logg
 	enrollmentStore := postgres.NewEnrollmentStore(database)
 	enrollmentService := enrollment.New(enrollmentStore)
 
+	presenceStore := postgres.NewPresenceStore(database)
+	presenceService := presence.New(presenceStore)
+
 	grpcListener, err := net.Listen("tcp", cfg.GRPCAddress)
 	if err != nil {
 		return nil, fmt.Errorf("listen for gRPC: %w", err)
 	}
 
 	grpcServer := grpc.NewServer()
-	agentv1.RegisterAgentServiceServer(grpcServer, agentgrpc.NewServer(enrollmentService))
+	agentv1.RegisterAgentServiceServer(grpcServer, agentgrpc.NewServer(enrollmentService, presenceService))
 
 	return &application{
 		logger: logger,
