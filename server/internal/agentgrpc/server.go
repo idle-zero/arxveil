@@ -3,13 +3,19 @@ package agentgrpc
 import (
 	"context"
 	"errors"
+	"io"
+	"log/slog"
+	"time"
 
 	"github.com/idle-zero/arxveil/server/internal/enrollment"
 	agentv1 "github.com/idle-zero/arxveil/server/internal/gen/agent/v1"
 	"github.com/idle-zero/arxveil/server/internal/presence"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+const sessionCloseTimeout = 5 * time.Second
 
 type Enroller interface {
 	Enroll(context.Context, enrollment.Input) (enrollment.EnrolledAgent, error)
@@ -25,12 +31,14 @@ type Server struct {
 	agentv1.UnimplementedAgentServiceServer
 	enroller        Enroller
 	presenceTracker PresenceTracker
+	logger          *slog.Logger
 }
 
-func NewServer(enroller Enroller, presenceTracker PresenceTracker) *Server {
+func NewServer(enroller Enroller, presenceTracker PresenceTracker, logger *slog.Logger) *Server {
 	return &Server{
 		enroller:        enroller,
 		presenceTracker: presenceTracker,
+		logger:          logger,
 	}
 }
 
@@ -61,4 +69,83 @@ func (s *Server) Enroll(ctx context.Context, request *agentv1.EnrollRequest) (*a
 		AgentId:     result.AgentID,
 		AgentSecret: result.Secret,
 	}, nil
+}
+
+func (s *Server) StreamUpdates(stream agentv1.AgentService_StreamUpdatesServer) error {
+	message, err := stream.Recv()
+	if errors.Is(err, io.EOF) {
+		return status.Error(codes.InvalidArgument, "authenticate message is required")
+	}
+	if err != nil {
+		return err
+	}
+	if message == nil || message.GetAuthenticate() == nil {
+		return status.Error(codes.InvalidArgument, "first stream message must authenticate the agent")
+	}
+
+	authenticate := message.GetAuthenticate()
+	session, err := s.presenceTracker.OpenSession(stream.Context(), presence.Credentials{
+		AgentID: authenticate.GetAgentId(),
+		Secret:  authenticate.GetAgentSecret(),
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, presence.ErrUnauthenticated):
+			return status.Error(codes.Unauthenticated, "agent authentication failed")
+		default:
+			return status.Error(codes.Internal, "authenticate agent stream")
+		}
+	}
+
+	s.logger.Info("agent stream authenticated", "machine_id", session.MachineID, "agent_id", session.AgentID)
+
+	closed := false
+	closeSession := func() error {
+		if closed {
+			return nil
+		}
+		closed = true
+
+		ctx, cancel := context.WithTimeout(context.Background(), sessionCloseTimeout)
+		defer cancel()
+		if err := s.presenceTracker.CloseSession(ctx, session); err != nil {
+			s.logger.Error("close agent stream", "machine_id", session.MachineID, "agent_id", session.AgentID, "error", err)
+			return err
+		}
+
+		s.logger.Info("agent stream closed", "machine_id", session.MachineID, "agent_id", session.AgentID)
+		return nil
+	}
+	defer func() {
+		_ = closeSession()
+	}()
+
+	for {
+		message, err := stream.Recv()
+		if errors.Is(err, io.EOF) {
+			if err := closeSession(); err != nil {
+				return status.Error(codes.Internal, "close agent stream")
+			}
+			return stream.SendAndClose(&emptypb.Empty{})
+		}
+		if err != nil {
+			return err
+		}
+		if message == nil {
+			return status.Error(codes.InvalidArgument, "stream message payload is required")
+		}
+
+		switch {
+		case message.GetHeartbeat() != nil:
+			if err := s.presenceTracker.RecordHeartbeat(stream.Context(), session); err != nil {
+				return status.Error(codes.Internal, "record agent heartbeat")
+			}
+		case message.GetAuthenticate() != nil:
+			return status.Error(codes.InvalidArgument, "agent stream is already authenticated")
+		case message.GetTelemetry() != nil:
+			return status.Error(codes.Unimplemented, "telemetry updates are not supported")
+		default:
+			return status.Error(codes.InvalidArgument, "stream message payload is required")
+		}
+	}
 }

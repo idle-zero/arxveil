@@ -44,7 +44,7 @@ func newApplication(cfg config.Config, database *pgxpool.Pool, logger *slog.Logg
 	}
 
 	grpcServer := grpc.NewServer()
-	agentv1.RegisterAgentServiceServer(grpcServer, agentgrpc.NewServer(enrollmentService, presenceService))
+	agentv1.RegisterAgentServiceServer(grpcServer, agentgrpc.NewServer(enrollmentService, presenceService, logger))
 
 	return &application{
 		logger: logger,
