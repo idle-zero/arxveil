@@ -23,7 +23,7 @@ type Enroller interface {
 
 type PresenceTracker interface {
 	OpenSession(context.Context, presence.Credentials) (presence.Session, error)
-	RecordHeartbeat(context.Context, presence.Session) error
+	RecordActivity(context.Context, presence.Session) error
 	CloseSession(context.Context, presence.Session) error
 }
 
@@ -137,8 +137,8 @@ func (s *Server) StreamUpdates(stream agentv1.AgentService_StreamUpdatesServer) 
 
 		switch {
 		case message.GetHeartbeat() != nil:
-			if err := s.presenceTracker.RecordHeartbeat(stream.Context(), session); err != nil {
-				return status.Error(codes.Internal, "record agent heartbeat")
+			if err := s.presenceTracker.RecordActivity(stream.Context(), session); err != nil {
+				return status.Error(codes.Internal, "record agent activity")
 			}
 		case message.GetAuthenticate() != nil:
 			return status.Error(codes.InvalidArgument, "agent stream is already authenticated")

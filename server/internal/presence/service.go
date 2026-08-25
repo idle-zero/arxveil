@@ -78,9 +78,9 @@ func (s *Service) OpenSession(ctx context.Context, credentials Credentials) (Ses
 	}, nil
 }
 
-func (s *Service) RecordHeartbeat(ctx context.Context, session Session) error {
+func (s *Service) RecordActivity(ctx context.Context, session Session) error {
 	if err := s.store.TouchSession(ctx, session); err != nil {
-		return fmt.Errorf("record heartbeat: %w", err)
+		return fmt.Errorf("record agent activity: %w", err)
 	}
 	return nil
 }

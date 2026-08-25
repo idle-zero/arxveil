@@ -50,7 +50,7 @@ func (p *fakePresenceTracker) OpenSession(_ context.Context, credentials presenc
 	return p.session, p.openErr
 }
 
-func (p *fakePresenceTracker) RecordHeartbeat(_ context.Context, session presence.Session) error {
+func (p *fakePresenceTracker) RecordActivity(_ context.Context, session presence.Session) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
