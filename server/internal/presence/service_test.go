@@ -187,7 +187,7 @@ func TestOpenSessionReturnsStoreErrors(t *testing.T) {
 	}
 }
 
-func TestRecordHeartbeat(t *testing.T) {
+func TestRecordActivity(t *testing.T) {
 	session := Session{
 		MachineID:   "machine-id",
 		AgentID:     validAgentID,
@@ -195,19 +195,19 @@ func TestRecordHeartbeat(t *testing.T) {
 	}
 	store := &fakeStore{}
 
-	if err := New(store).RecordHeartbeat(context.Background(), session); err != nil {
-		t.Fatalf("RecordHeartbeat() error = %v", err)
+	if err := New(store).RecordActivity(context.Background(), session); err != nil {
+		t.Fatalf("RecordActivity() error = %v", err)
 	}
 	if store.touchCalls != 1 || store.touchedSession != session {
 		t.Errorf("TouchSession() calls = %d, session = %+v", store.touchCalls, store.touchedSession)
 	}
 }
 
-func TestRecordHeartbeatReturnsStoreError(t *testing.T) {
+func TestRecordActivityReturnsStoreError(t *testing.T) {
 	wantErr := errors.New("database unavailable")
-	err := New(&fakeStore{touchErr: wantErr}).RecordHeartbeat(context.Background(), Session{})
+	err := New(&fakeStore{touchErr: wantErr}).RecordActivity(context.Background(), Session{})
 	if !errors.Is(err, wantErr) {
-		t.Errorf("RecordHeartbeat() error = %v, want wrapped %v", err, wantErr)
+		t.Errorf("RecordActivity() error = %v, want wrapped %v", err, wantErr)
 	}
 }
 
