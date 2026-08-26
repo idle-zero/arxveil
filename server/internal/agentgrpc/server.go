@@ -10,6 +10,7 @@ import (
 	"github.com/idle-zero/arxveil/server/internal/enrollment"
 	agentv1 "github.com/idle-zero/arxveil/server/internal/gen/agent/v1"
 	"github.com/idle-zero/arxveil/server/internal/presence"
+	"github.com/idle-zero/arxveil/server/internal/telemetry"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -27,18 +28,24 @@ type PresenceTracker interface {
 	CloseSession(context.Context, presence.Session) error
 }
 
-type Server struct {
-	agentv1.UnimplementedAgentServiceServer
-	enroller        Enroller
-	presenceTracker PresenceTracker
-	logger          *slog.Logger
+type TelemetryRecorder interface {
+	Record(context.Context, telemetry.Sample) error
 }
 
-func NewServer(enroller Enroller, presenceTracker PresenceTracker, logger *slog.Logger) *Server {
+type Server struct {
+	agentv1.UnimplementedAgentServiceServer
+	enroller          Enroller
+	presenceTracker   PresenceTracker
+	telemetryRecorder TelemetryRecorder
+	logger            *slog.Logger
+}
+
+func NewServer(enroller Enroller, presenceTracker PresenceTracker, telemetryRecorder TelemetryRecorder, logger *slog.Logger) *Server {
 	return &Server{
-		enroller:        enroller,
-		presenceTracker: presenceTracker,
-		logger:          logger,
+		enroller:          enroller,
+		presenceTracker:   presenceTracker,
+		telemetryRecorder: telemetryRecorder,
+		logger:            logger,
 	}
 }
 
@@ -143,9 +150,41 @@ func (s *Server) StreamUpdates(stream agentv1.AgentService_StreamUpdatesServer) 
 		case message.GetAuthenticate() != nil:
 			return status.Error(codes.InvalidArgument, "agent stream is already authenticated")
 		case message.GetTelemetry() != nil:
-			return status.Error(codes.Unimplemented, "telemetry updates are not supported")
+			sample, err := telemetrySample(session, message.GetTelemetry())
+			if err != nil {
+				return status.Error(codes.InvalidArgument, "invalid telemetry update")
+			}
+			if err := s.telemetryRecorder.Record(stream.Context(), sample); err != nil {
+				if errors.Is(err, telemetry.ErrInvalidSample) {
+					return status.Error(codes.InvalidArgument, "invalid telemetry update")
+				}
+				return status.Error(codes.Internal, "record telemetry update")
+			}
+			if err := s.presenceTracker.RecordActivity(stream.Context(), session); err != nil {
+				return status.Error(codes.Internal, "record agent activity")
+			}
 		default:
 			return status.Error(codes.InvalidArgument, "stream message payload is required")
 		}
 	}
+}
+
+func telemetrySample(session presence.Session, update *agentv1.Telemetry) (telemetry.Sample, error) {
+	if update == nil || update.GetCollectedAt() == nil {
+		return telemetry.Sample{}, errors.New("telemetry collection time is required")
+	}
+	if err := update.GetCollectedAt().CheckValid(); err != nil {
+		return telemetry.Sample{}, err
+	}
+
+	return telemetry.Sample{
+		MachineID:        session.MachineID,
+		CollectedAt:      update.GetCollectedAt().AsTime(),
+		CPUUsagePercent:  update.GetCpuUsagePercent(),
+		MemoryTotalBytes: update.GetMemoryTotalBytes(),
+		MemoryUsedBytes:  update.GetMemoryUsedBytes(),
+		DiskTotalBytes:   update.GetDiskTotalBytes(),
+		DiskUsedBytes:    update.GetDiskUsedBytes(),
+		UptimeSeconds:    update.GetUptimeSeconds(),
+	}, nil
 }
