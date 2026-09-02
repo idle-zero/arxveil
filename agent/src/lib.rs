@@ -3,6 +3,7 @@ pub mod enrollment;
 pub mod identity;
 pub mod metadata;
 pub mod proto;
+pub mod telemetry;
 
 use thiserror::Error;
 

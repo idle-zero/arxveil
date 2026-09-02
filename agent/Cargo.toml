@@ -19,6 +19,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 hostname = "0.4"
 os_info = "3"
+sysinfo = "0.39.6"
 
 [build-dependencies]
 protoc-bin-vendored = "3.2"
